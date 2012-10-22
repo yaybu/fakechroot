@@ -6,30 +6,8 @@ This package providers a ``fixtures`` compatible fixture for building and
 executing integration tests in a copy-on-write chroot environment without
 requiring the tests to be run as root.
 
-This code was extracted and refactored from the test harness within Yaybu.
-
-
-How does it work?
-=================
-
-This works through a trio of ``LD_PRELOAD`` libs that essentially monkey patch
-the chroot to think they have more privileged access than they do.
-
-The ``fakeroot`` package is used to fool your code into thinking it is root and
-that changes it is making as root (such as ``chmod``, for example) are taking
-effect. A special ``faked`` daemon is used to coordinate this between
-processes. 
-
-The ``fakechroot`` package is used to fool your code into thinking that the
-``chroot`` syscall worked. This means that any code perform file operations is
-tricked at a syscall level into acting on ``~/yourchroot/tmp/foo`` when it
-innocently thinks it just touched ``/tmp/foo``.
-
-The ``cowdancer`` package is what provides copy-on-write in userspace. The only
-requirement is a filesystem that supports hard links. You create a copy on your
-base image with ``cp -al``. This creates a farm of hardlinks. The ``cowdancer``
-patches then force any changes that would have been written to the base image
-to be written into a new file (thus breaking the hard link).
+This code was extracted and refactored from the test harness within `Yaybu
+<http://yaybu.com>`_.
 
 
 How do I use it?
@@ -70,28 +48,61 @@ be ``/home/john/Projects/myproject/tmp2234a/foo``).
 
 These were added as Yaybu needed them - patches for more are welcome.
 
-``call`` executes a command inside the chroot with the appropriate LD_PRELOAD
-setup.
+``FakeChrootFixture.call``
+    Executes a command inside the chroot with the appropriate LD_PRELOAD
+    setup.
 
-``exists`` returns ``True`` if a path inside the chroot exists.
+``FakeChrootFixture.exists``
+    Returns ``True`` if a path inside the chroot exists.
 
-``isdir`` returns ``True`` is a path in the chroot is a directory.
+``FakeChrootFixture.isdir``
+    Returns ``True`` is a path in the chroot is a directory.
 
-``mkdir`` creates a directory inside the chroot.
+``FakeChrootFixture.mkdir``
+    Creates a directory inside the chroot.
 
-``open`` returns a file inside the chroot for read or write operations.
+``FakeChrootFixture.open``
+    Returns a file inside the chroot for read or write operations.
 
-``touch`` runs the ``touch`` binary inside the chroot.
+``FakeChrootFixture.touch``
+    Runs the ``touch`` binary inside the chroot.
  
-``chmod`` runs the ``chmod`` binary inside the chroot. We can't directly use
-``os.chmod`` as it doesn't notify ``faked`` about the change.
+``FakeChrootFixture.chmod``
+    Runs the ``chmod`` binary inside the chroot. We can't directly use
+    ``os.chmod`` as it doesn't notify ``faked`` about the change.
 
-``readlink`` grabs the value of a symlink. As this can contain the entire path
-of the chroot we strip off the chroot path.
+``FakeChrootFixture.readlink``
+    Grabs the value of a symlink. As this can contain the entire path of the
+    chroot we strip off the chroot path.
 
-``symlink`` actually creates a symlink within the chroot.
+``FakeChrootFixture.symlink``
+    Actually creates a symlink within the chroot.
 
-``stat`` performs an ``os.stat`` on the path.
+``FakeChrootFixture.stat``
+    Performs an ``os.stat`` on the path.
+
+
+How does it work?
+=================
+
+This works through a trio of ``LD_PRELOAD`` libs that essentially monkey patch
+the chroot to think they have more privileged access than they do.
+
+The ``fakeroot`` package is used to fool your code into thinking it is root and
+that changes it is making as root (such as ``chmod``, for example) are taking
+effect. A special ``faked`` daemon is used to coordinate this between
+processes.
+
+The ``fakechroot`` package is used to fool your code into thinking that the
+``chroot`` syscall worked. This means that any code perform file operations is
+tricked at a syscall level into acting on ``~/yourchroot/tmp/foo`` when it
+innocently thinks it just touched ``/tmp/foo``.
+
+The ``cowdancer`` package is what provides copy-on-write in userspace. The only
+requirement is a filesystem that supports hard links. You create a copy on your
+base image with ``cp -al``. This creates a farm of hardlinks. The ``cowdancer``
+patches then force any changes that would have been written to the base image
+to be written into a new file (thus breaking the hard link).
 
 
 What are the limitations?
