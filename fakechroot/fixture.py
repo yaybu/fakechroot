@@ -25,7 +25,7 @@ except ImportError:
         SkipTest = RuntimeError
 
 
-class FakeChrootFixture(Fixture):
+class FakeChrootFixture(fixtures.Fixture):
 
     """
     I provide a very simple COW userspace environment in which to test configuration
@@ -56,8 +56,8 @@ class FakeChrootFixture(Fixture):
                 raise SkipTest("Need '%s' to run integration tests" % dep)
 
 	# The first time we use the fixture per test run we might 'refresh' it
-        # - that means making sure that it actually exists and that the latest code is
-        # deployed in it.
+        # - that means making sure that it actually exists and that the latest code is
+        # deployed in it.
         if self.firstrun:
             if not os.path.exists(self.base_path):
                 self.build_environment()

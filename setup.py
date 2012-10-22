@@ -23,6 +23,6 @@ setup(name='fakechroot',
           'setuptools',
       ],
       extras_require = {
-          'test': ['unitest2', 'fixtures', 'mock'],
+          'test': ['unittest2', 'fixtures', 'testtools', 'mock'],
           },
       )
