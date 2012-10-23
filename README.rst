@@ -2,12 +2,30 @@
 FakeChrootFixture
 =================
 
-This package providers a ``fixtures`` compatible fixture for building and
+This package provides a fixtures_ compatible fixture for building and
 executing integration tests in a copy-on-write chroot environment without
 requiring the tests to be run as root.
 
-This code was extracted and refactored from the test harness within `Yaybu
-<http://yaybu.com>`_.
+In order to use it you will need fakeroot_, fakechroot_ and cowdancer_.
+
+This code was extracted and refactored from the test harness within Yaybu_.
+
+.. _fixtures: http://pypi.python.org/pypi/fixtures
+.. _yaybu: http://yaybu.com
+.. _fakechroot: https://github.com/fakechroot/fakechroot/wiki
+.. _fakeroot: http://fakeroot.alioth.debian.org
+.. _cowdancer: http://www.netfort.gr.jp/~dancer/software/cowdancer.html.en
+
+
+So what does it do then?
+========================
+
+The first test to use the fixture will create (or refresh) a chroot. We use
+fakechroot magic to do this in userspace without root. Each test is then run in
+a cheap copy of this chroot. So each test gets its own clean (and fresh) chroot.
+
+This chroot is perfect for testing. You can perform actions against a seeming
+complete system and at the same time poke and prod at it from outside.
 
 
 How do I use it?
@@ -108,6 +126,9 @@ to be written into a new file (thus breaking the hard link).
 What are the limitations?
 =========================
 
+Your code only thinks it has root. So you can't bind port 80 or anything like
+that.
+
 Right now we only actively support Ubuntu. In particular, we are only actively
 testing with Lucid and Precise. Whilst other Unixes may be supported in future
 support for OS X is unfortunately unlikely (there is nothing like debootstrap)
@@ -128,4 +149,9 @@ utterly broke as root. But that's still enough power to wipe ``~``!
 What are the alternatives?
 ==========================
 
+Running your code in a VM is the best test, but even with snapshots running
+each test in a clean environment would be a pain.
+
+There have been lots of advances in Kernel namespacing. LXC could be a suitable
+alternative - it depends on your use case.
 
