@@ -13,5 +13,5 @@ class TestFakeChrootFixture(TestCase, TestWithFixtures):
         self.assertEqual(0, self.chroot.call(["/bin/true"]))
 
     def test_call_bin_false(self):
-        self.assertEqual(0, self.chroot.call(["/bin/false"]))
+        self.assertEqual(1, self.chroot.call(["/bin/false"]))
 

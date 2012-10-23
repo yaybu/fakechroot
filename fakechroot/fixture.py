@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os, glob, signal, shlex, subprocess, tempfile
+import shutil
 import platform
 import fixtures
 
@@ -42,6 +43,8 @@ class FakeChrootFixture(fixtures.Fixture):
         self.base_path = base_path or os.path.join(self.src_path, "base-image")
 
     def setUp(self):
+        super(FakeChrootFixture, self).setUp()
+
         self.distro, self.distro_version, self.distro_codename = platform.dist()
 
         dependencies = (
@@ -89,13 +92,6 @@ class FakeChrootFixture(fixtures.Fixture):
             ], cwd=self.chroot_path)
         self.addCleanup(os.unlink, self.ilist_path)
 
-    def cleanUp(self):
-        self.cleanup_session()
-
-    def reset(self):
-        self.cleanUp()
-        self.clone()
-
     def run_commands(self, commands):
         for command in commands:
             command = command % dict(base_image=self.base_path, distro=self.distro_codename)
@@ -119,10 +115,6 @@ class FakeChrootFixture(fixtures.Fixture):
 
     def refresh_environment(self):
         commands = [
-             "fakeroot fakechroot rm -rf /usr/local/lib/python2.6/dist-packages/Yaybu*",
-             "fakeroot fakechroot rm -rf /usr/local/lib/python2.7/dist-packages/Yaybu*",
-             "python setup.py sdist --dist-dir %(base_image)s",
-             "fakeroot fakechroot /usr/sbin/chroot %(base_image)s sh -c 'easy_install /Yaybu-*.tar.gz'",
              ]
         self.run_commands(commands)
 
