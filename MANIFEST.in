@@ -1,4 +1,4 @@
 include *
-recursive-include fakechroot
+recursive-include fakechroot *
 global-exclude *.pyc
 
