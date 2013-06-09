@@ -31,29 +31,15 @@ complete system and at the same time poke and prod at it from outside.
 How do I use it?
 ================
 
-There are 2 basic patterns to use this fixture. First of all, you can create a
-subclass of the ``fixtures.TestWithFixtures`` class::
+Something like this::
 
-    import fixtures
-    import fakechroot
+    import unittest2
+    from fakechroot import TestCase
 
-    class TestInAChroot(fixtures.TestWithFixtures):
-        def setUp(self):
-            self.chroot = self.useFixture(fakechroot.FakeChrootFixture())
-
+    class TestInAChroot(TestCase):
         def test_true(self):
             retval = self.chroot.call(["/bin/true"])
             self.failUnlessEqual(retval, 0)
-
-Fixtures also implement the context protocol so you could also::
-
-    import fakechroot
-
-    class TestInAChroot(unittest.TestCase):
-        def test_true(self):
-            with fakechroot.FakeChrootFixture() as chroot:
-                retval = chroot.call(["/bin/true"])
-                self.failUnlessEqual(retval, 0)
 
 
 What other cool API's are there?
