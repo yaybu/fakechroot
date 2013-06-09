@@ -59,7 +59,7 @@ class BaseFakeChroot(object):
             if not os.path.exists(dep):
                 raise self.Exception("Need '%s' to run integration tests" % dep)
 
-	# The first time we use the fixture per test run we might 'refresh' it
+        # The first time we use the fixture per test run we might 'refresh' it
         # - that means making sure that it actually exists and that the latest code is
         # deployed in it.
         if self.firstrun:
@@ -72,19 +72,19 @@ class BaseFakeChroot(object):
             # set this on the class to make sure any other fixtures pick it up
             BaseFakeChroot.firstrun = False
 
-	# Each fixture gets its own directory. In theory this allows us to run
-	# tests in parallel...
+        # Each fixture gets its own directory. In theory this allows us to run
+        # tests in parallel...
         self.path = tempfile.mkdtemp(dir=self.src_path)
         self.chroot_path = os.path.join(self.path, "chroot")
         self.addCleanup(shutil.rmtree, self.path)
 
-	# Clone the base-image - we use 'cp -al' because we won't the clone to
-	# be made out of hardlinks.
+        # Clone the base-image - we use 'cp -al' because we won't the clone to
+        # be made out of hardlinks.
         subprocess.check_call(["cp", "-al", self.base_path, self.chroot_path])
         self.addCleanup(subprocess.check_call, ["rm", "-rf", self.chroot_path])
 
-	# This is the same delightful incantation used in cow-shell to setup an
-	# .ilist file for our fakechroot.
+        # This is the same delightful incantation used in cow-shell to setup an
+        # .ilist file for our fakechroot.
         self.ilist_path = self.chroot_path + ".ilist"
         subprocess.check_call([
             "cowdancer-ilistcreate",
