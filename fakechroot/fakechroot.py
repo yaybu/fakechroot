@@ -16,19 +16,12 @@ import os, glob, signal, shlex, subprocess, tempfile
 import shutil
 import platform
 
+
 class FakeChrootError(Exception):
     pass
 
 
 class BaseFakeChroot(object):
-
-    """
-    I provide a very simple COW userspace environment in which to test configuration
-
-    I am used for some of Yaybu's internal tests.
-    """
-
-    Exception = FakeChrootError
 
     firstrun = True
     fakerootkey = None
@@ -37,6 +30,18 @@ class BaseFakeChroot(object):
         super(BaseFakeChroot, self).__init__()
         self.src_path = os.path.realpath(src_path)
         self.base_path = base_path or os.path.join(self.src_path, "base-image")
+        self.cleanups = []
+
+    def addCleanup(self, cleanup, *args, **kwargs):
+        self.cleanups.append((cleanup, args, kwargs))
+
+    def cleanUp(self):
+        for cleanup, args, kwargs in reversed(self.cleanups):
+            try:
+                cleanup(*args, **kwargs)
+            except:
+                # logger.error()
+                pass
 
     def setUp(self):
         super(BaseFakeChroot, self).setUp()
@@ -247,22 +252,3 @@ class BaseFakeChroot(object):
         groups_list = open(self._enpathinate("/etc/group")).read().splitlines()
         groups = dict(g.split(":", 1) for g in groups_list)
         return groups[group].split(":")
-
-
-class FakeChroot(BaseFakeChroot):
-
-    def __init__(self, *args, **kwargs):
-        super(FakeChroot, self).__init__(*args, **kwargs)
-        self.cleanups = []
-
-    def addCleanup(self, cleanup, *args, **kwargs):
-        self.cleanups.append((cleanup, args, kwargs))
-
-    def cleanUp(self):
-        for cleanup, args, kwargs in reversed(self.cleanups):
-            try:
-                cleanup(*args, **kwargs)
-            except:
-                # logger.error()
-                pass
-
