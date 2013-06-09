@@ -24,13 +24,12 @@ class FakeChrootError(Exception):
     pass
 
 
-class BaseFakeChroot(object):
+class FakeChroot(object):
 
     firstrun = True
     fakerootkey = None
 
     def __init__(self, src_path=os.getcwd(), base_path=None):
-        super(BaseFakeChroot, self).__init__()
         self.src_path = os.path.realpath(src_path)
         self.base_path = base_path or os.path.join(self.src_path, "base-image")
         self.cleanups = []
@@ -47,8 +46,6 @@ class BaseFakeChroot(object):
                 pass
 
     def setUp(self):
-        super(BaseFakeChroot, self).setUp()
-
         self.distro, self.distro_version, self.distro_codename = platform.dist()
 
         if not self.distro_codename in supported_distros:
@@ -208,8 +205,8 @@ class BaseFakeChroot(object):
         env['LD_PRELOAD'] = "libfakechroot.so libfakeroot-sysv.so /usr/lib/cowdancer/libcowdancer.so"
         return env 
 
-    def call(self, command, new_save_file=False):
-        p = subprocess.Popen([command, cwd=self.chroot_path, env=self.get_env())
+    def call(self, command):
+        p = subprocess.Popen(command, cwd=self.chroot_path, env=self.get_env())
         stdout, stderr = p.communicate()
         return p.returncode
 
