@@ -1,2 +1,4 @@
-include *.rst
-recursive-include yaybu/providers/tests *.j2
+include *
+recursive-include fakechroot
+global-exclude *.pyc
+

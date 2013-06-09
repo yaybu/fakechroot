@@ -29,10 +29,10 @@ class TestCase(unittest2.TestCase):
         self.chroot.setUp()
 
     def failUnlessExists(self, path):
-        if not self.fixture.exists(path):
+        if not self.chroot.exists(path):
             self.fail("Path '%s' does not exist" % path)
 
     def failIfExists(self, path):
-        if self.fixture.exists(path):
+        if self.chroot.exists(path):
             self.fail("Path '%s' exists" % path)
 

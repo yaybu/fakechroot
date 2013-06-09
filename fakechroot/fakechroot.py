@@ -142,7 +142,7 @@ class FakeChroot(object):
         f = tempfile.NamedTemporaryFile(dir=os.path.join(self.chroot_path, 'tmp'), delete=False)
         f.write(contents)
         f.close()
-        return "/tmp/" + os.path.realpath(f.name).split("/")[-1]
+        return f.name, "/tmp/" + os.path.realpath(f.name).split("/")[-1]
 
     def get_env(self):
         currentdir = os.path.dirname(__file__)
@@ -206,8 +206,9 @@ class FakeChroot(object):
         return env 
 
     def call(self, command):
-        p = subprocess.Popen(command, cwd=self.chroot_path, env=self.get_env())
+        p = subprocess.Popen(command, cwd=self.chroot_path, env=self.get_env(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = p.communicate()
+        print stdout
         return p.returncode
 
     def exists(self, path):
