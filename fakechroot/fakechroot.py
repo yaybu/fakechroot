@@ -1,4 +1,4 @@
-# Copyright 2011 Isotoma Limited
+# Copyright 2013 Isotoma Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ class BaseFakeChroot(object):
 
             # We only refresh the base environment once, so
             # set this on the class to make sure any other fixtures pick it up
-            BaseFakeChroot.firstrun = False
+            FakeChroot.firstrun = False
 
         # Each fixture gets its own directory. In theory this allows us to run
         # tests in parallel...
@@ -143,6 +143,8 @@ class BaseFakeChroot(object):
         return "/tmp/" + os.path.realpath(f.name).split("/")[-1]
 
     def get_env(self):
+        currentdir = os.path.dirname(__file__)
+
         env = {}
 
         path = os.path.realpath(os.path.join(self.chroot_path, "..", ".."))
@@ -156,8 +158,8 @@ class BaseFakeChroot(object):
             '/sbin/ldconfig=/bin/true',
             '/usr/bin/ischroot=/bin/true',
             '/usr/bin/ldd=/usr/bin/ldd.fakechroot',
-            '/usr/bin/sudo=%s' % os.path.join(path, "testing", "sudo"),
-            '/usr/bin/env=%s' % os.path.join(path, "testing", "env"),
+            '/usr/bin/sudo=%s' % os.path.join(currentdir, "overlay", "sudo"),
+            '/usr/bin/env=%s' % os.path.join(currentdir, "overlay", "env"),
             ])  
         env['FAKECHROOT_BASE'] = self.chroot_path
 
