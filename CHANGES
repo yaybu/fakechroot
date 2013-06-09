@@ -4,13 +4,14 @@ Changelog for fakechroot
 0.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add overlay directory. This contains a mock of 'sudo' and 'env' that doesn't
+  interfere with the chrooting.
 
 
 0.0.1 (2013-06-09)
 ------------------
 
-- Nothing changed yet.
+- Packaging fixes and backport things from Yaybu.
 
 
 0.0.0 (2013-06-09)
