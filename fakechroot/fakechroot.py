@@ -96,6 +96,17 @@ class FakeChroot(object):
             ], cwd=self.chroot_path)
         self.addCleanup(os.unlink, self.ilist_path)
 
+        # This is really annoying. Setuptools doesnt preserve permissions. So booo.
+        overlay_src = os.path.join(os.path.dirname(__file__), "overlay")
+        self.overlay_dir = os.path.join(self.path, 'overlay')
+        if not os.path.exists(self.overlay_dir):
+            os.mkdir(self.overlay_dir)
+        for bin in os.listdir(overlay_src):
+            src = os.path.join(overlay_src, bin)
+            dst = os.path.join(self.overlay_dir, bin)
+            shutil.copyfile(src, dst)
+            os.chmod(dst, 0755)
+
     def run_commands(self, commands):
         for command in commands:
             command = command % dict(base_image=self.base_path, distro=self.distro_codename)
@@ -160,8 +171,8 @@ class FakeChroot(object):
             '/sbin/ldconfig=/bin/true',
             '/usr/bin/ischroot=/bin/true',
             '/usr/bin/ldd=/usr/bin/ldd.fakechroot',
-            '/usr/bin/sudo=%s' % os.path.join(currentdir, "overlay", "sudo"),
-            '/usr/bin/env=%s' % os.path.join(currentdir, "overlay", "env"),
+            '/usr/bin/sudo=%s' % os.path.join(self.overlay_dir, "sudo"),
+            '/usr/bin/env=%s' % os.path.join(self.overlay_dir, "env"),
             ])  
         env['FAKECHROOT_BASE'] = self.chroot_path
 

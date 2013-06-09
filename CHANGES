@@ -4,7 +4,7 @@ Changelog for fakechroot
 0.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- File permissions aren't respected so need this horrible kludge.
 
 
 0.0.3 (2013-06-09)
