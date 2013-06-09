@@ -137,12 +137,27 @@ class BaseFakeChroot(object):
         f.close()
         return "/tmp/" + os.path.realpath(f.name).split("/")[-1]
 
-    def call(self, command, new_save_file=False):
-        env = os.environ.copy()
+    def get_env(self):
+        env = {}
+
+        path = os.path.realpath(os.path.join(self.chroot_path, "..", ".."))
 
         env['FAKECHROOT'] = 'true'
-        # env['FAKECHROOT_EXCLUDE_PATH'] = ":".join([
-        #    ])
+        env['FAKECHROOT_EXCLUDE_PATH'] = ":".join([
+            '/dev', '/proc', '/sys', path,
+            ])  
+        env['FAKECHROOT_CMD_SUBST'] = ":".join([
+            '/usr/sbin/chroot=/usr/sbin/chroot.fakechroot',
+            '/sbin/ldconfig=/bin/true',
+            '/usr/bin/ischroot=/bin/true',
+            '/usr/bin/ldd=/usr/bin/ldd.fakechroot',
+            '/usr/bin/sudo=%s' % os.path.join(path, "testing", "sudo"),
+            '/usr/bin/env=%s' % os.path.join(path, "testing", "env"),
+            ])  
+        env['FAKECHROOT_BASE'] = self.chroot_path
+
+        if "FAKECHROOT_DEBUG" in os.environ:
+            env['FAKECHROOT_DEBUG'] = 'true'
 
         # Set up fakeroot stuff
         env['FAKEROOTKEY'] = self.get_session()
@@ -153,7 +168,7 @@ class BaseFakeChroot(object):
 
         # Meh, we inherit the invoking users environment - LAME.
         env['HOME'] = '/root'
-        env['PWD'] = '/'
+        env['PWD'] = '/' 
         env['LOGNAME'] = 'root'
         env['USERNAME'] = 'root'
         env['USER'] = 'root'
@@ -179,10 +194,12 @@ class BaseFakeChroot(object):
 
         env['LD_LIBRARY_PATH'] = ":".join(LD_LIBRARY_PATH)
         env['LD_PRELOAD'] = "libfakechroot.so libfakeroot-sysv.so /usr/lib/cowdancer/libcowdancer.so"
+        return env 
 
-        retval = subprocess.call(["/usr/sbin/chroot", self.chroot_path] + command, cwd=self.chroot_path, env=env)
-
-        return retval
+    def call(self, command, new_save_file=False):
+        p = subprocess.Popen([command, cwd=self.chroot_path, env=self.get_env())
+        stdout, stderr = p.communicate()
+        return p.returncode
 
     def exists(self, path):
         return os.path.exists(self._enpathinate(path))
