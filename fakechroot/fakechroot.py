@@ -17,6 +17,9 @@ import shutil
 import platform
 
 
+supported_distros = ('lucid', 'precise', 'quantal', 'raring')
+
+
 class FakeChrootError(Exception):
     pass
 
@@ -47,6 +50,9 @@ class BaseFakeChroot(object):
         super(BaseFakeChroot, self).setUp()
 
         self.distro, self.distro_version, self.distro_codename = platform.dist()
+
+        if not self.distro_codename in supported_distros:
+            raise self.Exception('Unexpected and unsupported distro "%s"' % self.distro_codename)
 
         dependencies = (
             "/usr/bin/fakeroot",
@@ -85,7 +91,7 @@ class BaseFakeChroot(object):
 
         # This is the same delightful incantation used in cow-shell to setup an
         # .ilist file for our fakechroot.
-        self.ilist_path = self.chroot_path + ".ilist"
+        self.ilist_path = self.path + "ilist"
         subprocess.check_call([
             "cowdancer-ilistcreate",
             self.ilist_path,
@@ -102,7 +108,7 @@ class BaseFakeChroot(object):
             
     def build_environment(self):
         commands = [
-            "fakeroot fakechroot debootstrap --variant=fakechroot --include=git-core,python-setuptools,python-dateutil,python-magic,ubuntu-keyring,gpgv,python-dev,build-essential %(distro)s %(base_image)s",
+            "fakeroot fakechroot debootstrap --variant=fakechroot --include=git-core,python-setuptools,python-dateutil,ubuntu-keyring,gpgv,python-dev,build-essential %(distro)s %(base_image)s",
             "fakeroot fakechroot /usr/sbin/chroot %(base_image)s apt-get update",
             ]
 
@@ -115,9 +121,8 @@ class BaseFakeChroot(object):
             os.mkdir(os.path.join(self.base_path, "var", "run"))
 
     def refresh_environment(self):
-        commands = [
-             ]
-        self.run_commands(commands)
+        # Ths hook lets subclasses do stuff to the fakechroot base image once per test suite invocation
+        pass
 
     def cleanup_session(self):
         if self.faked:
