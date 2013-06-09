@@ -1,7 +1,7 @@
 Changelog for fakechroot
 ========================
 
-0.0.2 (unreleased)
+0.0.2 (2013-06-09)
 ------------------
 
 - Add overlay directory. This contains a mock of 'sudo' and 'env' that doesn't
