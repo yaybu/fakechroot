@@ -21,7 +21,7 @@ from .fakechroot import FakeChroot
 class TestCase(unittest2.TestCase):
 
     FakeChroot = FakeChroot
-    location = os.path.join(os.path.dirname("__file__"), "..")
+    location = os.path.join(os.path.dirname(__file__), "..")
 
     def setUp(self):
         self.chroot = self.FakeChroot(self.location)
