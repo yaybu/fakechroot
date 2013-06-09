@@ -88,7 +88,7 @@ class FakeChroot(object):
 
         # This is the same delightful incantation used in cow-shell to setup an
         # .ilist file for our fakechroot.
-        self.ilist_path = self.path + "ilist"
+        self.ilist_path = os.path.join(self.path, "ilist")
         subprocess.check_call([
             "cowdancer-ilistcreate",
             self.ilist_path,
