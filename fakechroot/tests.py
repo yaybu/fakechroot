@@ -23,3 +23,53 @@ class TestFakeChrootFixture(TestCase):
     def test_call_bin_false(self):
         self.assertEqual(1, self.chroot.call(["/bin/false"]))
 
+    def test_exists_true(self):
+        self.assertEqual(self.chroot.exists("/bin/true"), True)
+
+    def test_exists_false(self):
+        self.assertEqual(self.chroot.exists("/bin/does_not_exists"), False)
+
+    def test_isdir_true(self):
+        self.assertEqual(self.chroot.isdir("/bin"), True)
+
+    def test_isdir_false(self):
+        self.assertEqual(self.chroot.isdir("/bin/true"), False)
+
+    def test_mkdir(self):
+        self.assertEqual(self.chroot.isdir("/newdir"), False)
+        self.chroot.mkdir("/newdir")
+        self.assertEqual(self.chroot.isdir("/newdir"), True)
+
+    def test_open_read(self):
+        data = self.chroot.open("/etc/passwd").read()
+        self.assertTrue(len(data) > 0)
+
+    def test_touch(self):
+        self.assertEqual(self.chroot.exists("/test-touch"), False)
+        self.chroot.touch("/test-touch")
+        self.assertEqual(self.chroot.exists("/test-touch"), True)
+
+    def test_chmod(self):
+        self.chroot.touch("/test-chmod")
+        self.assertTrue((self.chroot.stat("/test-chmod").st_mode & 0777) != 0755)
+        self.chroot.chmod("/test-chmod", 0755)
+        self.assertEqual((self.chroot.stat("/test-chmod").st_mode & 0777), 0755)
+
+    def test_symlink_and_readlink(self):
+        self.chroot.symlink("/etc", "/other-etc")
+        self.assertEqual(self.chroot.readlink("/other-etc"), "/etc")
+
+    def test_stat(self):
+        result = self.chroot.stat("/root")
+        self.assertEqual(result.st_mode & 0777, 0700)
+        # self.assertEqual(result.st_uid, 0)
+        # self.assertEqual(result.st_gid, 0)
+
+    def test_get_user(self):
+        user = self.chroot.get_user("root")
+        self.assertEqual(user[4], "/root")
+
+    def test_get_group(self):
+        group = self.chroot.get_group("root")
+        self.assertEqual(group[1], "0")
+
