@@ -10,7 +10,7 @@ Changelog for fakechroot
 0.0.5 (2013-06-12)
 ------------------
 
-- Nothing changed yet.
+- Introduce locks to stop multi-process runners from having multiple processes building a base image.
 
 
 0.0.4 (2013-06-09)
