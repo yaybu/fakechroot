@@ -42,8 +42,10 @@ class Lock(object):
         try:
             self.fp = os.open(self.path, os.O_CREAT | os.O_RDWR | os.O_EXCL)
         except OSError:
-            if self.locked():
-                raise Locked(self.path)
+            for i in range(20):
+                if self.locked():
+                    raise Locked(self.path)
+                time.sleep(0.1)
             raise
 
         os.write(self.fp, str(os.getpid()))
@@ -63,7 +65,10 @@ class Lock(object):
             pid = int(open(self.path).read())
         except ValueError:
             return False
-
+        except IOError:
+            if not os.path.exists(self.path):
+                return False
+            raise
         try:
             os.kill(pid, 0)
         except OSError:
