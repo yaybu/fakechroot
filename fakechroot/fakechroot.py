@@ -16,6 +16,8 @@ import os, glob, signal, shlex, subprocess, tempfile
 import shutil
 import platform
 
+from .lock import Lock, Locked
+
 
 supported_distros = ('lucid', 'precise', 'quantal', 'raring')
 
@@ -32,6 +34,7 @@ class FakeChroot(object):
     def __init__(self, src_path=os.getcwd(), base_path=None):
         self.src_path = os.path.realpath(src_path)
         self.base_path = base_path or os.path.join(self.src_path, "base-image")
+        self.lock_path = self.base_path + ".lock"
         self.cleanups = []
 
     def addCleanup(self, cleanup, *args, **kwargs):
@@ -66,14 +69,23 @@ class FakeChroot(object):
         # - that means making sure that it actually exists and that the latest code is
         # deployed in it.
         if self.firstrun:
-            if not os.path.exists(self.base_path):
-                self.build_environment()
+            lock = Lock(self.lock_path)
 
-            self.refresh_environment()
+            try:
+                lock.open()
 
-            # We only refresh the base environment once, so
-            # set this on the class to make sure any other fixtures pick it up
-            FakeChroot.firstrun = False
+                if not os.path.exists(self.base_path):
+                    self.build_environment()
+
+                self.refresh_environment()
+
+                # We only refresh the base environment once, so
+                # set this on the class to make sure any other fixtures pick it up
+                FakeChroot.firstrun = False
+            except Locked:
+                lock.wait()
+            else:
+                lock.close()
 
         # Each fixture gets its own directory. In theory this allows us to run
         # tests in parallel...
