@@ -125,10 +125,10 @@ class FakeChroot(object):
             p = subprocess.Popen(shlex.split(command))
             if p.wait():
                 raise SystemExit("Command failed")
-            
+
     def build_environment(self):
         commands = [
-            "fakeroot fakechroot debootstrap --variant=fakechroot --include=git-core,python-setuptools,python-dateutil,ubuntu-keyring,gpgv,python-dev,build-essential %(distro)s %(base_image)s",
+            "fakeroot fakechroot debootstrap --variant=fakechroot --include=subversion,git-core,python-setuptools,python-dateutil,ubuntu-keyring,gpgv,python-dev,build-essential %(distro)s %(base_image)s",
             "fakeroot fakechroot /usr/sbin/chroot %(base_image)s apt-get update",
             ]
 
@@ -177,7 +177,7 @@ class FakeChroot(object):
         env['FAKECHROOT'] = 'true'
         env['FAKECHROOT_EXCLUDE_PATH'] = ":".join([
             '/dev', '/proc', '/sys', path,
-            ])  
+            ])
         env['FAKECHROOT_CMD_SUBST'] = ":".join([
             '/usr/sbin/chroot=/usr/sbin/chroot.fakechroot',
             '/sbin/ldconfig=/bin/true',
@@ -185,7 +185,7 @@ class FakeChroot(object):
             '/usr/bin/ldd=/usr/bin/ldd.fakechroot',
             '/usr/bin/sudo=%s' % os.path.join(self.overlay_dir, "sudo"),
             '/usr/bin/env=%s' % os.path.join(self.overlay_dir, "env"),
-            ])  
+            ])
         env['FAKECHROOT_BASE'] = self.chroot_path
 
         if "FAKECHROOT_DEBUG" in os.environ:
@@ -200,7 +200,7 @@ class FakeChroot(object):
 
         # Meh, we inherit the invoking users environment - LAME.
         env['HOME'] = '/root'
-        env['PWD'] = '/' 
+        env['PWD'] = '/'
         env['LOGNAME'] = 'root'
         env['USERNAME'] = 'root'
         env['USER'] = 'root'
@@ -226,7 +226,7 @@ class FakeChroot(object):
 
         env['LD_LIBRARY_PATH'] = ":".join(LD_LIBRARY_PATH)
         env['LD_PRELOAD'] = "libfakechroot.so libfakeroot-sysv.so /usr/lib/cowdancer/libcowdancer.so"
-        return env 
+        return env
 
     def call(self, command):
         p = subprocess.Popen(command, cwd=self.chroot_path, env=self.get_env(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
