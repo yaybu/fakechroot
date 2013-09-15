@@ -1,7 +1,7 @@
 Changelog for fakechroot
 ========================
 
-0.0.6 (unreleased)
+0.0.6 (2013-09-15)
 ------------------
 
 - Include subversion in base image.
