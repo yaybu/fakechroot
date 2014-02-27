@@ -14,11 +14,14 @@
 
 from __future__ import absolute_import
 import os
-import unittest2
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 from .fakechroot import FakeChroot
 
 
-class TestCase(unittest2.TestCase):
+class TestCase(unittest.TestCase):
 
     FakeChroot = FakeChroot
     location = os.path.join(os.path.dirname(__file__), "..")
