@@ -8,6 +8,8 @@ Changelog for fakechroot
   the same directory. This is useful if you want don't control where
   ``FakeChroot`` is instantiated.
 
+- Switch project from buildout to virtualenv.
+
 
 0.0.7 (2014-02-27)
 ------------------
