@@ -30,25 +30,29 @@ class FakeChroot(object):
 
     firstrun = True
     fakerootkey = None
+    checked_supported = False
 
-    def __init__(self, src_path=os.getcwd(), base_path=None):
-        self.src_path = os.path.realpath(src_path)
+    def __init__(self, path, base_path=None):
+        self.path = path
+        self.chroot_path = os.path.join(path, "chroot")
+        self.faked_state_path = os.path.join(path, "faked-state")
+        self.ilist_path = os.path.join(path, "ilist")
+
+        self.src_path = os.path.realpath(os.path.join(path, ".."))
         self.base_path = base_path or os.path.join(self.src_path, "base-image")
         self.lock_path = self.base_path + ".lock"
-        self.cleanups = []
 
-    def addCleanup(self, cleanup, *args, **kwargs):
-        self.cleanups.append((cleanup, args, kwargs))
+        self.faked = None
 
-    def cleanUp(self):
-        for cleanup, args, kwargs in reversed(self.cleanups):
-            try:
-                cleanup(*args, **kwargs)
-            except:
-                # logger.error()
-                pass
+    @classmethod
+    def create_in_tempdir(cls, parent):
+        path = tempfile.mkdtemp(dir=parent)
+        return cls(path)
 
-    def setUp(self):
+    def _assert_supported(self):
+        if FakeChroot.checked_supported:
+            return
+
         self.distro, self.distro_version, self.distro_codename = platform.dist()
 
         if not self.distro_codename in supported_distros:
@@ -63,7 +67,11 @@ class FakeChroot(object):
 
         for dep in dependencies:
             if not os.path.exists(dep):
-                raise self.Exception("Need '%s' to run integration tests" % dep)
+                raise FakeChrootError("Need '%s' to run integration tests" % dep)
+        FakeChroot.checked_supported = True
+
+    def build(self):
+        self._assert_supported()
 
         # The first time we use the fixture per test run we might 'refresh' it
         # - that means making sure that it actually exists and that the latest code is
@@ -89,24 +97,18 @@ class FakeChroot(object):
 
         # Each fixture gets its own directory. In theory this allows us to run
         # tests in parallel...
-        self.path = tempfile.mkdtemp(dir=self.src_path)
-        self.chroot_path = os.path.join(self.path, "chroot")
-        self.addCleanup(shutil.rmtree, self.path)
 
         # Clone the base-image - we use 'cp -al' because we won't the clone to
         # be made out of hardlinks.
         subprocess.check_call(["cp", "-al", self.base_path, self.chroot_path])
-        self.addCleanup(subprocess.check_call, ["rm", "-rf", self.chroot_path])
 
         # This is the same delightful incantation used in cow-shell to setup an
         # .ilist file for our fakechroot.
-        self.ilist_path = os.path.join(self.path, "ilist")
         subprocess.check_call([
             "cowdancer-ilistcreate",
             self.ilist_path,
             "find . -xdev \( -type l -o -type f \) -a -links +1 -print0 | xargs -0 stat --format '%d %i '",
             ], cwd=self.chroot_path)
-        self.addCleanup(os.unlink, self.ilist_path)
 
         # This is really annoying. Setuptools doesnt preserve permissions. So booo.
         overlay_src = os.path.join(os.path.dirname(__file__), "overlay")
@@ -144,20 +146,19 @@ class FakeChroot(object):
         # Ths hook lets subclasses do stuff to the fakechroot base image once per test suite invocation
         pass
 
-    def cleanup_session(self):
-        if self.faked:
-            os.kill(int(self.faked.strip()), signal.SIGTERM)
-            self.faked = None
-
     def get_session(self):
         if self.fakerootkey:
             return self.fakerootkey
 
-        p = subprocess.Popen(['faked-sysv'], stdout=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        self.fakerootkey, self.faked = stdout.split(":")
+        if os.path.exists(self.faked_state_path):
+            state = open(self.faked_state_path).read()
+        else:
+            p = subprocess.Popen(['faked-sysv'], stdout=subprocess.PIPE)
+            state, stderr = p.communicate()
+            with open(self.faked_state_path, "w") as fp:
+                fp.write(state)
 
-        self.addCleanup(self.cleanup_session)
+        self.fakerootkey, self.faked = state.split(":")
 
         return self.fakerootkey
 
@@ -168,6 +169,8 @@ class FakeChroot(object):
         return f.name, "/tmp/" + os.path.realpath(f.name).split("/")[-1]
 
     def get_env(self):
+        self._assert_supported()
+
         currentdir = os.path.dirname(__file__)
 
         env = {}
@@ -280,3 +283,24 @@ class FakeChroot(object):
         groups_list = open(self._enpathinate("/etc/group")).read().splitlines()
         groups = dict(g.split(":", 1) for g in groups_list)
         return groups[group].split(":")
+
+    def cleanup_session(self):
+        # Another fakechroot instance might have created a fakeroot session
+        if not self.faked and os.path.exists(self.faked_state_path):
+            self.get_session()
+
+        if self.faked:
+            os.kill(int(self.faked.strip()), signal.SIGTERM)
+            self.faked = None
+
+    def destroy(self):
+        self.cleanup_session()
+        if os.path.exists(self.faked_state_path):
+            os.unlink(self.faked_state_path)
+        if os.path.exists(self.ilist_path):
+            os.unlink(self.ilist_path)
+        # shutil.rmtree has disappeared up itself deleting large base images
+        if os.path.exists(self.chroot_path):
+            subprocess.check_call(["rm", "-rf", self.chroot_path])
+        if os.path.exists(self.path):
+            shutil.rmtree(self.path)

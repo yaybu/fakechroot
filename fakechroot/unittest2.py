@@ -27,9 +27,9 @@ class TestCase(unittest.TestCase):
     location = os.path.join(os.path.dirname(__file__), "..")
 
     def setUp(self):
-        self.chroot = self.FakeChroot(self.location)
-        self.addCleanup(self.chroot.cleanUp)
-        self.chroot.setUp()
+        self.chroot = self.FakeChroot.create_in_tempdir(self.location)
+        self.addCleanup(self.chroot.destroy)
+        self.chroot.build()
 
     def failUnlessExists(self, path):
         if not self.chroot.exists(path):

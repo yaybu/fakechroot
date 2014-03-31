@@ -4,7 +4,9 @@ Changelog for fakechroot
 0.0.8 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Refactor to allow multiple instances of the ``FakeChroot`` class to point at
+  the same directory. This is useful if you want don't control where
+  ``FakeChroot`` is instantiated.
 
 
 0.0.7 (2014-02-27)
