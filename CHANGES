@@ -1,7 +1,7 @@
 Changelog for fakechroot
 ========================
 
-0.0.9 (unreleased)
+0.0.9 (2014-04-05)
 ------------------
 
 - Fix missing overlay_dir case.
