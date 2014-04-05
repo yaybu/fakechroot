@@ -37,6 +37,7 @@ class FakeChroot(object):
         self.chroot_path = os.path.join(path, "chroot")
         self.faked_state_path = os.path.join(path, "faked-state")
         self.ilist_path = os.path.join(path, "ilist")
+        self.overlay_dir = os.path.join(path, 'overlay')
 
         self.src_path = os.path.realpath(os.path.join(path, ".."))
         self.base_path = base_path or os.path.join(self.src_path, "base-image")
@@ -112,7 +113,6 @@ class FakeChroot(object):
 
         # This is really annoying. Setuptools doesnt preserve permissions. So booo.
         overlay_src = os.path.join(os.path.dirname(__file__), "overlay")
-        self.overlay_dir = os.path.join(self.path, 'overlay')
         if not os.path.exists(self.overlay_dir):
             os.mkdir(self.overlay_dir)
         for bin in os.listdir(overlay_src):
