@@ -1,8 +1,8 @@
 Changelog for fakechroot
 ========================
 
-0.0.10 (unreleased)
--------------------
+0.2.0 (2014-06-01)
+------------------
 
 - Add some more API wrappers for poking the fakechroot.
 
