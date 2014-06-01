@@ -31,6 +31,7 @@ class FakeChroot(object):
     firstrun = True
     fakerootkey = None
     checked_supported = False
+    Exception = RuntimeError
 
     def __init__(self, path, base_path=None):
         self.path = path
