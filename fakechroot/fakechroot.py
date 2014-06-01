@@ -18,25 +18,6 @@ import shutil
 from .lock import Lock, Locked
 
 
-def dist():
-    try:
-        etclsbrel = open("/etc/lsb-release", "rU")
-        for line in etclsbrel:
-            m = _distributor_id_file_re.search(line)
-            if m:
-                _u_distname = m.group(1).strip()
-            m = _release_file_re.search(line)
-            if m:
-                _u_version = m.group(1).strip()
-            m = _codename_file_re.search(line)
-            if m:
-                _u_id = m.group(1).strip()
-        if _u_distname and _u_version:
-            return (_u_distname, _u_version, _u_id)
-    except (EnvironmentError, UnboundLocalError):
-            pass
-
-
 supported_distros = ('lucid', 'precise', 'quantal', 'raring')
 
 
@@ -51,7 +32,9 @@ class FakeChroot(object):
     checked_supported = False
     Exception = RuntimeError
 
-    def __init__(self, path, base_path=None):
+    def __init__(self, path, base_path=None, distro='precise'):
+        self.distro = distro
+
         self.path = path
         self.chroot_path = os.path.join(path, "chroot")
         self.faked_state_path = os.path.join(path, "faked-state")
@@ -72,11 +55,6 @@ class FakeChroot(object):
     def _assert_supported(self):
         if FakeChroot.checked_supported:
             return
-
-        self.distro, self.distro_version, self.distro_codename = dist()
-
-        if not self.distro_codename in supported_distros:
-            raise self.Exception('Unexpected and unsupported distro "%s"' % self.distro_codename)
 
         dependencies = (
             "/usr/bin/fakeroot",
@@ -142,7 +120,7 @@ class FakeChroot(object):
 
     def run_commands(self, commands):
         for command in commands:
-            command = command % dict(base_image=self.base_path, distro=self.distro_codename)
+            command = command % dict(base_image=self.base_path, distro=self.distro)
             p = subprocess.Popen(shlex.split(command))
             if p.wait():
                 raise SystemExit("Command failed")
