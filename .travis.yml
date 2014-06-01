@@ -8,8 +8,7 @@ python:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -y -q fakeroot fakechroot cowdancer
-  - sudo cp travis/lsb-release /etc/lsb-release
+  - sudo apt-get install -y -q debootstrap fakeroot fakechroot cowdancer
 
 install:
   - pip install -r requirements.txt
