@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import os, glob, signal, shlex, subprocess, tempfile
 import shutil
 
@@ -19,6 +20,12 @@ from .lock import Lock, Locked
 
 
 supported_distros = ('lucid', 'precise', 'quantal', 'raring')
+
+stat_result = collections.namedtuple(
+    "stat_result",
+    ("st_mode", "st_ino", "st_dev", "st_nlink", "st_uid", "st_gid",
+     "st_size", "st_atime", "st_mtime", "st_ctime")
+)
 
 
 class FakeChrootError(Exception):
@@ -269,7 +276,7 @@ class FakeChroot(object):
         returncode, stdout, stderr = self.check_call(["stat", "-L", "-t", path])
         if returncode != 0:
             raise OSError
-        data = stdout.split(" ")
+        data = stdout.decode().split(" ")
         return stat_result(
             int(data[3], 16),  # st_mode
             int(data[8]),  # st_ino
@@ -287,7 +294,7 @@ class FakeChroot(object):
         returncode, stdout, stderr = self.check_call(["stat", "-t", path])
         if returncode != 0:
             raise OSError
-        data = stdout.split(" ")
+        data = stdout.decode().split(" ")
         return stat_result(
             int(data[3], 16),  # st_mode
             int(data[8]),  # st_ino
@@ -324,9 +331,6 @@ class FakeChroot(object):
 
     def symlink(self, source, dest):
         os.symlink(self._enpathinate(source), self._enpathinate(dest))
-
-    def stat(self, path):
-        return os.stat(self._enpathinate(path))
 
     def _enpathinate(self, path):
         return os.path.join(self.chroot_path, *path.split(os.path.sep))

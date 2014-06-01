@@ -4,7 +4,9 @@ Changelog for fakechroot
 0.0.10 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Add some more API wrappers for poking the fakechroot.
+
+- Port to python 3 and pypy.
 
 
 0.0.9 (2014-04-05)
