@@ -21,6 +21,7 @@ setup(name='fakechroot',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'six',
       ],
       extras_require = {
           'test': ['unittest2', 'discover'],

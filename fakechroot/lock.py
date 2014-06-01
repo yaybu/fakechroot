@@ -20,6 +20,7 @@ This is used to prevent races when using a multi-process test runner.
 
 import os
 import time
+import six
 
 
 class Locked(Exception):
@@ -48,7 +49,7 @@ class Lock(object):
                 time.sleep(0.1)
             raise
 
-        os.write(self.fp, str(os.getpid()))
+        os.write(self.fp, six.binary_type(os.getpid()))
 
     def close(self):
         if self.fp:

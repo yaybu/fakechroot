@@ -148,14 +148,14 @@ class FakeChroot(object):
             return self.fakerootkey
 
         if os.path.exists(self.faked_state_path):
-            state = open(self.faked_state_path).read()
+            state = open(self.faked_state_path, "rb").read()
         else:
             p = subprocess.Popen(['faked-sysv'], stdout=subprocess.PIPE)
             state, stderr = p.communicate()
-            with open(self.faked_state_path, "w") as fp:
+            with open(self.faked_state_path, "wb") as fp:
                 fp.write(state)
 
-        self.fakerootkey, self.faked = state.split(":")
+        self.fakerootkey, self.faked = state.decode().split(":")
 
         return self.fakerootkey
 
@@ -231,7 +231,6 @@ class FakeChroot(object):
     def call(self, command):
         p = subprocess.Popen(command, cwd=self.chroot_path, env=self.get_env(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = p.communicate()
-        print stdout
         return p.returncode
 
     def exists(self, path):
