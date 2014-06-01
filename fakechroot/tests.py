@@ -51,9 +51,10 @@ class TestFakeChrootFixture(TestCase):
 
     def test_chmod(self):
         self.chroot.touch("/test-chmod")
-        self.assertTrue((self.chroot.stat("/test-chmod").st_mode & 0777) != 0755)
-        self.chroot.chmod("/test-chmod", 0755)
-        self.assertEqual((self.chroot.stat("/test-chmod").st_mode & 0777), 0755)
+        self.assertTrue((self.chroot.stat("/test-chmod").st_mode & 0o777) != 0o755)
+        self.chroot.chmod("/test-chmod", 0o755)
+
+        self.assertEqual((self.chroot.stat("/test-chmod").st_mode & 0o777), 0o755)
 
     def test_symlink_and_readlink(self):
         self.chroot.symlink("/etc", "/other-etc")
@@ -61,7 +62,7 @@ class TestFakeChrootFixture(TestCase):
 
     def test_stat(self):
         result = self.chroot.stat("/root")
-        self.assertEqual(result.st_mode & 0777, 0700)
+        self.assertEqual(result.st_mode & 0o777, 0o700)
         # self.assertEqual(result.st_uid, 0)
         # self.assertEqual(result.st_gid, 0)
 
