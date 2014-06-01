@@ -119,7 +119,7 @@ class FakeChroot(object):
             src = os.path.join(overlay_src, bin)
             dst = os.path.join(self.overlay_dir, bin)
             shutil.copyfile(src, dst)
-            os.chmod(dst, 0755)
+            os.chmod(dst, 0o755)
 
     def run_commands(self, commands):
         for command in commands:
