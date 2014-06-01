@@ -14,9 +14,27 @@
 
 import os, glob, signal, shlex, subprocess, tempfile
 import shutil
-import platform
 
 from .lock import Lock, Locked
+
+
+def dist():
+    try:
+        etclsbrel = open("/etc/lsb-release", "rU")
+        for line in etclsbrel:
+            m = _distributor_id_file_re.search(line)
+            if m:
+                _u_distname = m.group(1).strip()
+            m = _release_file_re.search(line)
+            if m:
+                _u_version = m.group(1).strip()
+            m = _codename_file_re.search(line)
+            if m:
+                _u_id = m.group(1).strip()
+        if _u_distname and _u_version:
+            return (_u_distname, _u_version, _u_id)
+    except (EnvironmentError, UnboundLocalError):
+            pass
 
 
 supported_distros = ('lucid', 'precise', 'quantal', 'raring')
@@ -55,7 +73,7 @@ class FakeChroot(object):
         if FakeChroot.checked_supported:
             return
 
-        self.distro, self.distro_version, self.distro_codename = platform.dist()
+        self.distro, self.distro_version, self.distro_codename = dist()
 
         if not self.distro_codename in supported_distros:
             raise self.Exception('Unexpected and unsupported distro "%s"' % self.distro_codename)
