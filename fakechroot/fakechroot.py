@@ -243,6 +243,68 @@ class FakeChroot(object):
     def isdir(self, path):
         return os.path.isdir(self._enpathinate(path))
 
+    def isfile(self, path):
+        return os.path.isfile(self._enpathinate(path))
+
+    def islink(self, path):
+        return os.path.islink(self._enpathinate(path))
+
+    def lexists(self, path):
+        return os.path.lexists(self._enpathinate(path))
+
+    def get(self, path):
+        return self.open(path).read()
+
+    def put(self, path, contents, chmod=0o644):
+        self.open(path, 'w').write(contents)
+
+    def makedirs(self, path):
+        os.makedirs(self._enpathinate(path))
+
+    def unlink(self, path):
+        os.unlink(self._enpathinate(path))
+
+    def check_call(self, command):
+        p = subprocess.Popen(command, cwd=self.chroot_path, env=self.get_env(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        return p.returncode, stdout, stderr
+
+    def stat(self, path):
+        returncode, stdout, stderr = self.check_call(["stat", "-L", "-t", path])
+        if returncode != 0:
+            raise OSError
+        data = stdout.split(" ")
+        return stat_result(
+            int(data[3], 16),  # st_mode
+            int(data[8]),  # st_ino
+            int(data[7], 16),  # st_dev
+            int(data[9]),  # st_nlink
+            int(data[4]),  # st_uid
+            int(data[5]),  # st_gid
+            int(data[1]),  # st_size
+            int(data[11]),  # st_atime
+            int(data[12]),  # st_mtime
+            int(data[13]),  # st_ctime
+        )
+
+    def lstat(self, path):
+        returncode, stdout, stderr = self.check_call(["stat", "-t", path])
+        if returncode != 0:
+            raise OSError
+        data = stdout.split(" ")
+        return stat_result(
+            int(data[3], 16),  # st_mode
+            int(data[8]),  # st_ino
+            int(data[7], 16),  # st_dev
+            int(data[9]),  # st_nlink
+            int(data[4]),  # st_uid
+            int(data[5]),  # st_gid
+            int(data[1]),  # st_size
+            int(data[11]),  # st_atime
+            int(data[12]),  # st_mtime
+            int(data[13]),  # st_ctime
+        )
+
     def mkdir(self, path):
         os.mkdir(self._enpathinate(path))
 
