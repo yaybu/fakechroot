@@ -15,8 +15,19 @@
 import collections
 import os, glob, signal, shlex, subprocess, tempfile
 import shutil
+import six
 
 from .lock import Lock, Locked
+
+
+def to_str(s):
+    if isinstance(s, str):
+        return s
+    elif isinstance(s, six.binary_type):
+        return s.decode("utf-8")
+    elif isinstance(s, six.text_type):
+        return s.encode("utf-8")
+    raise TypeError("value is not a string")
 
 
 supported_distros = ('lucid', 'precise', 'quantal', 'raring')
@@ -276,7 +287,7 @@ class FakeChroot(object):
         returncode, stdout, stderr = self.check_call(["stat", "-L", "-t", path])
         if returncode != 0:
             raise OSError
-        data = stdout.decode().split(" ")
+        data = to_str(stdout).split(" ")
         return stat_result(
             int(data[3], 16),  # st_mode
             int(data[8]),  # st_ino
@@ -294,7 +305,7 @@ class FakeChroot(object):
         returncode, stdout, stderr = self.check_call(["stat", "-t", path])
         if returncode != 0:
             raise OSError
-        data = stdout.decode().split(" ")
+        data = to_str(stdout).split(" ")
         return stat_result(
             int(data[3], 16),  # st_mode
             int(data[8]),  # st_ino
