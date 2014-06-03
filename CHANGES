@@ -4,7 +4,9 @@ Changelog for fakechroot
 0.2.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Ensure stdout is a native string before attempting to split it
+
+- Add some methods to the chroot object for inspecting pwd/grp/spwd
 
 
 0.2.0 (2014-06-01)
