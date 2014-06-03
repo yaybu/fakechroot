@@ -74,3 +74,23 @@ class TestFakeChrootFixture(TestCase):
         group = self.chroot.get_group("root")
         self.assertEqual(group[1], "0")
 
+    def test_getpwnam(self):
+        nobody = self.chroot.getpwnam("nobody")
+        self.assertEqual(nobody.pw_name, "nobody")
+
+    def test_getpwnam_KeyError(self):
+        self.assertRaises(KeyError, self.chroot.getpwnam, "nobodyy")
+
+    def test_getgrnam(self):
+        nogroup = self.chroot.getgrnam("nogroup")
+        self.assertEqual(nogroup.gr_name, "nogroup")
+
+    def test_getgrnam_KeyError(self):
+        self.assertRaises(KeyError, self.chroot.getgrnam, "nogrou")
+
+    def test_getspnam(self):
+        nobody = self.chroot.getspnam("nobody")
+        self.assertEqual(nobody.sp_nam, "nobody")
+
+    def test_getspnam_KeyError(self):
+        self.assertRaises(KeyError, self.chroot.getspnam, "nobodo")

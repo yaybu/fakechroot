@@ -38,6 +38,17 @@ stat_result = collections.namedtuple(
      "st_size", "st_atime", "st_mtime", "st_ctime")
 )
 
+struct_group = collections.namedtuple("struct_group",
+                                      ("gr_name", "gr_passwd", "gr_gid", "gr_mem"))
+
+struct_passwd = collections.namedtuple("struct_passwd",
+                                       ("pw_name", "pw_passwd", "pw_uid", "pw_gid", "pw_gecos", "pw_dir",
+                                        "pw_shell"))
+
+struct_spwd = collections.namedtuple("struct_spwd",
+                                     ("sp_nam", "sp_pwd", "sp_lastchg", "sp_min", "sp_max", "sp_warn",
+                                      "sp_inact", "sp_expire", "sp_flag", ))
+
 
 class FakeChrootError(Exception):
     pass
@@ -339,6 +350,81 @@ class FakeChroot(object):
             if relpath.startswith(x):
                 relpath = relpath[1:]
         return "/" + relpath
+
+    def _getgrall(self):
+        groups = self.get("/etc/group")
+        for line in groups.split("\n"):
+            if not line.strip():
+                continue
+            tup = line.split(":")
+            yield struct_group(
+                tup[0],
+                tup[1],
+                int(tup[2]),
+                tup[3].split(","),
+            )
+
+    def getgrall(self):
+        return list(self._getgrall())
+
+    def getgrnam(self, name):
+        for group in self._getgrall():
+            if group.gr_name == name:
+                return group
+        raise KeyError(name)
+
+    def getgrgid(self, gid):
+        for group in self._getgrall():
+            if group.gr_gid == gid:
+                return group
+        raise KeyError(gid)
+
+    def _getpwall(self):
+        users = self.get("/etc/passwd")
+        for line in users.split("\n"):
+            if not line.strip():
+                continue
+            tup = line.split(":")
+            yield struct_passwd(
+                tup[0],
+                tup[1],
+                int(tup[2]),
+                int(tup[3]),
+                tup[4],
+                tup[5],
+                tup[6]
+            )
+
+    def getpwall(self):
+        return list(self._getpwall())
+
+    def getpwnam(self, name):
+        for user in self._getpwall():
+            if user.pw_name == name:
+                return user
+        raise KeyError(name)
+
+    def getpwuid(self, uid):
+        for user in self._getpwall():
+            if user.pw_uid == uid:
+                return user
+        raise KeyError(uid)
+
+    def _getspall(self):
+        susers = self.get("/etc/shadow")
+        for line in susers.split("\n"):
+            if not line.strip():
+                continue
+            yield struct_spwd(*line.split(":"))
+
+    def getspall(self):
+        return list(self._getspall())
+
+    def getspnam(self, name):
+        for suser in self._getspall():
+            if suser.sp_nam == name:
+                return suser
+        raise KeyError(name)
 
     def symlink(self, source, dest):
         os.symlink(self._enpathinate(source), self._enpathinate(dest))
