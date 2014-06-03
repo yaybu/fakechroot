@@ -2,6 +2,15 @@
 FakeChrootFixture
 =================
 
+.. image:: https://travis-ci.org/yaybu/fakechroot.png?branch=master
+   :target: https://travis-ci.org/#!/yaybu/fakechroot
+
+.. image:: https://coveralls.io/repos/yaybu/fakechroot/badge.png?branch=master
+    :target: https://coveralls.io/r/yaybu/fakechroot
+
+.. image:: https://pypip.in/version/fakechroot/badge.png
+    :target: https://pypi.python.org/pypi/fakechroot/
+
 This package provides a fixtures_ compatible fixture for building and
 executing integration tests in a copy-on-write chroot environment without
 requiring the tests to be run as root.
