@@ -1,7 +1,7 @@
 Changelog for fakechroot
 ========================
 
-0.2.1 (unreleased)
+0.2.1 (2014-06-03)
 ------------------
 
 - Ensure stdout is a native string before attempting to split it
